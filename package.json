@@ -23,8 +23,8 @@
     "start": "node ./bin/smackdown.js"
   },
   "config":{
+    "input_dir":"./test",
     "html_output_dir":"./html-output",
-    "input_dir":"./",
     "less_stylesheet":"https://f1lt3r.github.io/markdown-css/markdown-default.less"
   }
 }
