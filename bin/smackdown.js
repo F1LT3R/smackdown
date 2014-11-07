@@ -119,15 +119,6 @@ var input_dir       = config.input_dir
 
 
 
-  function getStyleBlock (less_stylesheet) {
-    // return new Promise(function (resolve, reject) {
-      // resolve(readFile(less_stylesheet));
-        // resolve('<style>'+renderLessToCSS(css)+'</style>');
-    // });
-  }
-
-
-
   // Reads a file as UTF8 and returns data
   function readFile (file) {
     return new Promise(function (resolve, reject) {
@@ -281,17 +272,6 @@ var input_dir       = config.input_dir
     .then(res, rej)
     .catch(rej);
     ;
-    
-    // getStyleBlock(less_stylesheet).then(reject, resolve);
-    // var styleBlock = readFile(less_stylesheet)
-    //   .then(renderLessToCSS)
-    //   .then(function(data){
-    //     // console.log(data);
-    //     return data;
-    //   }, _rej);
-
-    // console.log(styleBlock);
-    
   }
 
   smackDown(input_dir);
