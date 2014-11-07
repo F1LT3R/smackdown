@@ -12,7 +12,8 @@
     "marked": "*",
     "less": "*",
     "node-terminal": "*",
-    "underscore": "*"
+    "underscore": "*",
+    "jsdom":"*"
   },
   "engine": "node >= 0.4.1",
   "repository" :{
