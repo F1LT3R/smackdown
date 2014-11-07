@@ -179,9 +179,6 @@ var input_dir       = config.input_dir
 
     html += '<!DOCTYPE html>';
     html += '<head>';
-    
-    // page += css_styles;
-    
     html += '</head>';
     html += '<body>';
     html += '<article>';
@@ -214,45 +211,62 @@ var input_dir       = config.input_dir
 
   function exportToHTML (files) {
 
-    var exportList = [];
+    // var exportList = [];
 
-    files.forEach(function (filename) {
+    readFile(less_stylesheet)
+    .then(renderLessToCSS)
+    .then(function (css) {
+      return new Promise(function (resolve, reject){
 
-      readFile(filename)
-        .then(buildHTML)
-        .then(updateLinks)
-        .then(function (html) {
-            writeFile(html, filename);
-          })
-        // .then(function (data) {
-        //     exportList.push(data);
-        //   })
-        .catch(rej)
-        ;
-
-    });
-    
-    return exportList;
+        files.forEach(function (filename) {
+          readFile(filename)
+            .then(buildHTML)
+            .then(updateLinks)
+            .then(function (html){ return appendCSS(html, css); })
+            .then(function (html){ writeFile(html, filename); })
+            .catch(rej)
+            ;
+        });
+      
+        resolve(true);
+      })
+    })
+    .then(res)
+    .catch(rej)
+    ;
   }
 
+  function appendCSS (html, css) {
+    return new Promise(function (resolve, reject) {
 
+      jsdom.env(html,
+        ["http://code.jquery.com/jquery.js"],
+          function (err, window) {
+            if (err!==null) return reject(err);
+            var $ = window.$;
+          
+            $("head").append('<style>'+css+'</style>');
+            
+            resolve($('html').html());
+        }
+      );
 
-  var linkTag = /[^<]*(<a href="([^"]+)">([^<]+)<\/a>)/g;
+    });    
+  }
 
   function updateLinks (html) {
     return new Promise(function (resolve, reject) {
 
       jsdom.env(html, ["http://code.jquery.com/jquery.js"], function (err, window) {
-        if (err) return reject(err);
+        if (err!==null) return reject(err);
         var $ = window.$;
         $("a").each(function () {
           var $link = $(this)
             , href  = $link.attr('href')
             ;
-            console.log(href);
           $link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
         });
-        resolve($('body').html());
+        resolve($('html').html());
       });
 
     });
