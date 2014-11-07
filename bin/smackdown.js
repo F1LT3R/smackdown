@@ -224,8 +224,9 @@ var input_dir       = config.input_dir
         .then(function (html) {
             writeFile(html, filename);
           })
-        .then(res, rej)
-        // .then(function(){exportList.push(filename)})
+        // .then(function (data) {
+        //     exportList.push(data);
+        //   })
         .catch(rej)
         ;
 
@@ -248,6 +249,7 @@ var input_dir       = config.input_dir
           var $link = $(this)
             , href  = $link.attr('href')
             ;
+            console.log(href);
           $link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
         });
         resolve($('body').html());
