@@ -24,7 +24,7 @@ var input_dir       = config.input_dir
   // Global resolve/reject (for debugging)
   function rej (err) {
     return new Promise(function (resolve, reject){
-      terminal.color('red').write('PROMISE REJECTED :(\n');
+      terminal.color('red').write('PROMISE REJECTED:\n');
       terminal.color('grey').write(err);
       return reject(new Error(err));
     })
@@ -32,7 +32,7 @@ var input_dir       = config.input_dir
 
   function res (data) {
     return new Promise(function (resolve, reject){
-      terminal.color('green').write('PROMISE RESOLVED :)\n');
+      terminal.color('green').write('PROMISE RESOLVED:\n');
       terminal.color('grey').write('');
       console.log(data)
       resolve(data);
@@ -102,53 +102,6 @@ var input_dir       = config.input_dir
 
 
 
-
-
-
-  function exportToHTML (markdownList) {
-
-    var savedFiles = [];
-
-
-    markdownList.forEach(function (post) {
-
-
-    //     // fs.readFile(post.file, 'utf8', function (err,data) {
-    //     //   if (err) { return console.log(err); }
-        
-    //     //   var page = '';
-    //     //   page += '<!DOCTYPE html>';
-    //     //   page += '<head>';
-    //     //   page += css_styles;
-    //     //   page += '</head>';
-    //     //   page += '<body>';
-    //     //   page += '<article>';
-    //     //   page += marked(data);
-    //     //   page += '</article>';
-    //     //   page += '</body>';
-
-    //     //   // fs.writeFile(html+'/posts/'+post.title+'.html', page, function(err) {
-    //     //   //     if(err) {
-    //     //   //         console.log(err);
-    //     //   //     } else {
-    //     //   //       saved.push(post.title);
-    //     //   //         console.log("The file '"+post.title+"' was saved!");
-    //     //   //     }
-    //     //   //  }); 
-        
-    //     // });
-
-    //   }); 
-
-    });
-    
-    
-    return savedFiles;
-  }
-
-
-
-
   function renderLessToCSS (less_css) {
     return new Promise(function (resolve, reject) {
       less.render(less_css, function (err, vanilla_css) {
@@ -173,7 +126,6 @@ var input_dir       = config.input_dir
         if(err!==null) return reject(err);
         resolve(data);
       });
-
     });
   }
 
@@ -214,6 +166,76 @@ var input_dir       = config.input_dir
   // }
 
 
+
+
+  function buildHTML (markdown, filename){
+    var html = '';
+
+    html += '<!DOCTYPE html>';
+    html += '<head>';
+    
+    // page += css_styles;
+    
+    html += '</head>';
+    html += '<body>';
+    html += '<article>';
+    
+    html += marked(markdown);
+    
+    html += '</article>';
+    html += '</body>';
+
+    var data = {};
+    data[filename] = html;
+
+    return data;
+  }
+
+  // Writes a file as UTF8 and returns filename
+  function writeFile (file) {
+    return new Promise(function (resolve, reject) {
+      
+      var name, data;
+
+      for(name in file){
+        name = name.split(extension)[0]+'.html';
+        htmlOutput = file[name];
+      }
+
+      fs.writeFile(name, htmlOutput, function (err, data) {
+        if(err!==null) return reject(err);
+        resolve(filename);
+      });
+
+    });
+  }
+
+  //   // fs.writeFile(html+'/posts/'+post.title+'.html', page, function(err) {
+
+  function exportToHTML (files) {
+
+    var exportList = [];
+
+    files.forEach(function (filename) {
+
+      readFile(filename)
+        .then(function (markdown) {
+          return buildHTML(markdown, filename);
+        })
+        // .then(res, rej)
+        .then(writeFile)
+        // .then(function(){exportList.push(filename)})
+        .catch(rej)
+        ;
+
+    });
+    
+    return exportList;
+  }
+
+
+
+
   function renderBlog (dir) {  
 
     // getStyleBlock(less_stylesheet).then(reject, resolve);
@@ -229,7 +251,7 @@ var input_dir       = config.input_dir
     Promise.resolve(listDir(dir))
     .then(collectFiles)
     .then(flattenTree)
-    // .then(exportToHTML)
+    .then(exportToHTML)
     .then(res)
     .catch(rej);
     ;
