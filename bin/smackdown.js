@@ -8,6 +8,7 @@ var //Promise   = require("bluebird")
   , less      = require('less')
   , terminal  = require('node-terminal')
   , marked    = require('marked')
+  , jsdom     = require("jsdom")
   , config    = require('../package').config
   ;
 
@@ -23,18 +24,21 @@ var input_dir       = config.input_dir
 
   // Global resolve/reject (for debugging)
   function rej (err) {
-    return new Promise(function (resolve, reject){
-      terminal.color('red').write('PROMISE REJECTED:\n');
-      terminal.color('grey').write(err);
+    return new Promise(function (resolve, reject) {
+      terminal.color('red').write('\n____[ PROMISE REJECTED ]________________________________________\n');
+      terminal.color('red').write(err);
+      terminal.color('red').write('\n----------------------------------------------------------------\n');
+      terminal.color('grey').write('');
       return reject(new Error(err));
     })
   }
 
   function res (data) {
-    return new Promise(function (resolve, reject){
-      terminal.color('green').write('PROMISE RESOLVED:\n');
+    return new Promise(function (resolve, reject) {
+      terminal.color('green').write('\n____[ PROMISE RESOLVED ]________________________________________\n');
+      console.log(data);
+      terminal.color('green').write('\n----------------------------------------------------------------\n');
       terminal.color('grey').write('');
-      console.log(data)
       resolve(data);
     });
   }
@@ -51,6 +55,7 @@ var input_dir       = config.input_dir
       return 'dir';
     }
   }
+
 
 
   // Returns a nested array of all files (recursive)
@@ -95,6 +100,7 @@ var input_dir       = config.input_dir
   }      
 
 
+
   // Flattens a nested file array by an extension type
   function flatten (ary) {
     return _.flatten(ary);
@@ -111,12 +117,6 @@ var input_dir       = config.input_dir
     });
   }
 
-  function getStyleBlock (less_stylesheet) {
-    // return new Promise(function (resolve, reject) {
-      // resolve(readFile(less_stylesheet));
-        // resolve('<style>'+renderLessToCSS(css)+'</style>');
-    // });
-  }
 
 
   // Reads a file as UTF8 and returns data
@@ -130,10 +130,13 @@ var input_dir       = config.input_dir
   }
 
 
+
   function typeOf (item) {
     var type = Object.prototype.toString.call(item).split(' ')[1];
     return type.substr(0, type.length-1).toLowerCase();
   }
+
+
 
   function flattenTree (branch, list) {
     var list = list || []
@@ -160,22 +163,13 @@ var input_dir       = config.input_dir
     return list;
   }
 
-  // function flattenTree (tree) {
-
-  //   return flatten(tree);
-  // }
 
 
-
-
-  function buildHTML (markdown, filename){
+  function buildHTML (markdown) {
     var html = '';
 
     html += '<!DOCTYPE html>';
     html += '<head>';
-    
-    // page += css_styles;
-    
     html += '</head>';
     html += '<body>';
     html += '<article>';
@@ -185,78 +179,99 @@ var input_dir       = config.input_dir
     html += '</article>';
     html += '</body>';
 
-    var data = {};
-    data[filename] = html;
-
-    return data;
+    return html;
   }
 
+
+
   // Writes a file as UTF8 and returns filename
-  function writeFile (file) {
+  function writeFile (html, filename) {
     return new Promise(function (resolve, reject) {
+
+    filename = filename.split(extension)[0]+'.html';
+  
+    fs.writeFile(filename, html, function (err, data) {
+      if(err!==null) return reject(err);
+      resolve(data);
+    });
+
+    });
+  }
+
+
+
+  function exportToHTML (files) {
+
+    // var exportList = [];
+
+    readFile(less_stylesheet)
+    .then(renderLessToCSS)
+    .then(function (css) {
+      return new Promise(function (resolve, reject){
+
+        files.forEach(function (filename) {
+          readFile(filename)
+            .then(buildHTML)
+            .then(updateLinks)
+            .then(function (html){ return appendCSS(html, css); })
+            .then(function (html){ writeFile(html, filename); })
+            .catch(rej)
+            ;
+        });
       
-      var name, data;
+        resolve(true);
+      })
+    })
+    .then(res)
+    .catch(rej)
+    ;
+  }
 
-      for(name in file){
-        name = name.split(extension)[0]+'.html';
-        htmlOutput = file[name];
-      }
+  function appendCSS (html, css) {
+    return new Promise(function (resolve, reject) {
 
-      fs.writeFile(name, htmlOutput, function (err, data) {
-        if(err!==null) return reject(err);
-        resolve(filename);
+      jsdom.env(html,
+        ["http://code.jquery.com/jquery.js"],
+          function (err, window) {
+            if (err!==null) return reject(err);
+            var $ = window.$;
+          
+            $("head").append('<style>'+css+'</style>');
+            
+            resolve($('html').html());
+        }
+      );
+
+    });    
+  }
+
+  function updateLinks (html) {
+    return new Promise(function (resolve, reject) {
+
+      jsdom.env(html, ["http://code.jquery.com/jquery.js"], function (err, window) {
+        if (err!==null) return reject(err);
+        var $ = window.$;
+        $("a").each(function () {
+          var $link = $(this)
+            , href  = $link.attr('href')
+            ;
+          $link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
+        });
+        resolve($('html').html());
       });
 
     });
   }
 
-  //   // fs.writeFile(html+'/posts/'+post.title+'.html', page, function(err) {
 
-  function exportToHTML (files) {
-
-    var exportList = [];
-
-    files.forEach(function (filename) {
-
-      readFile(filename)
-        .then(function (markdown) {
-          return buildHTML(markdown, filename);
-        })
-        // .then(res, rej)
-        .then(writeFile)
-        // .then(function(){exportList.push(filename)})
-        .catch(rej)
-        ;
-
-    });
-    
-    return exportList;
-  }
-
-
-
-
-  function renderBlog (dir) {  
-
-    // getStyleBlock(less_stylesheet).then(reject, resolve);
-    // var styleBlock = readFile(less_stylesheet)
-    //   .then(renderLessToCSS)
-    //   .then(function(data){
-    //     // console.log(data);
-    //     return data;
-    //   }, _rej);
-
-    // console.log(styleBlock);
-
+  function smackDown (dir) {  
     Promise.resolve(listDir(dir))
     .then(collectFiles)
     .then(flattenTree)
     .then(exportToHTML)
-    .then(res)
+    .then(res, rej)
     .catch(rej);
     ;
-    
-    
   }
 
-  renderBlog(input_dir);
+  smackDown(input_dir);

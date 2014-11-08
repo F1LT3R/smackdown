@@ -12,7 +12,8 @@
     "marked": "*",
     "less": "*",
     "node-terminal": "*",
-    "underscore": "*"
+    "underscore": "*",
+    "jsdom":"*"
   },
   "engine": "node >= 0.4.1",
   "repository" :{
@@ -25,6 +26,6 @@
   "config":{
     "input_dir":"./test",
     "html_output_dir":"./html-output",
-    "less_stylesheet":"https://f1lt3r.github.io/markdown-css/markdown-default.less"
+    "less_stylesheet":"./markdown-css/markdown-default.less"
   }
 }
