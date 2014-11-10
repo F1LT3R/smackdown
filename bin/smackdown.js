@@ -1,24 +1,31 @@
+#!/usr/bin/env node
 
-// REQUIRE
-var //Promise   = require("bluebird")
-    Promise   = require("bluebird")
+var Promise   = require('bluebird')
   , fs        = require('fs')
   , _         = require('underscore')
   , minimatch = require('minimatch')
   , less      = require('less')
   , terminal  = require('node-terminal')
   , marked    = require('marked')
-  , jsdom     = require("jsdom")
+  , jsdom     = require('jsdom')
+  , request   = require('request')
   , config    = require('../package').config
   ;
 
 
 // GLOBAL VARS
-var input_dir       = config.input_dir
+var input_dir       = config.input_dir || process.argv[2]
   , html_output_dir = config.html_output_dir
   , less_stylesheet = config.less_stylesheet
   , extension       = ".md"
   ;
+
+
+
+// process.argv.forEach(function (val, index, array) {
+//   if
+//   // console.log(index + ': ' + val);
+// });
 
 
 
@@ -200,11 +207,29 @@ var input_dir       = config.input_dir
 
 
 
+
+  function requestStyles (url) {
+    return new Promise(function (resolve, reject) {
+    
+      request(url, function (err, response, body) {
+        if (err!==null) return resolve(err);
+
+        if (!err && response.statusCode == 200) {
+          resolve(body);
+        }
+      });
+
+    });
+  };
+
+
+
   function exportToHTML (files) {
 
     // var exportList = [];
 
-    readFile(less_stylesheet)
+    // readFile(less_stylesheet)
+    requestStyles(less_stylesheet)
     .then(renderLessToCSS)
     .then(function (css) {
       return new Promise(function (resolve, reject){
@@ -235,8 +260,10 @@ var input_dir       = config.input_dir
           function (err, window) {
             if (err!==null) return reject(err);
             var $ = window.$;
-          
-            $("head").append('<style>'+css+'</style>');
+
+            // css.css;
+
+            $("head").append( '<style>'+css.css+'</style>');
             
             resolve($('html').html());
         }
