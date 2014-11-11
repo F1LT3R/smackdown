@@ -14,11 +14,12 @@ var Promise   = require('bluebird')
 
 
 // GLOBAL VARS
-var input_dir       = config.input_dir || process.argv[2]
+var input_dir       = config.input_dir || process.argv[2] || "./"
   , html_output_dir = config.html_output_dir
   , less_stylesheet = config.less_stylesheet
   , extension       = ".md"
   ;
+
 
 
 
@@ -30,25 +31,25 @@ var input_dir       = config.input_dir || process.argv[2]
 
 
   // Global resolve/reject (for debugging)
-  function rej (err) {
-    return new Promise(function (resolve, reject) {
-      terminal.color('red').write('\n____[ PROMISE REJECTED ]________________________________________\n');
-      terminal.color('red').write(err);
-      terminal.color('red').write('\n----------------------------------------------------------------\n');
-      terminal.color('grey').write('');
-      return reject(new Error(err));
-    })
-  }
+  // function rej (err) {
+  //   return new Promise(function (resolve, reject) {
+  //     terminal.color('red').write('\n____[ PROMISE REJECTED ]________________________________________\n');
+  //     terminal.color('red').write(err);
+  //     terminal.color('red').write('\n----------------------------------------------------------------\n');
+  //     terminal.color('grey').write('');
+  //     return reject(new Error(err));
+  //   })
+  // }
 
-  function res (data) {
-    return new Promise(function (resolve, reject) {
-      terminal.color('green').write('\n____[ PROMISE RESOLVED ]________________________________________\n');
-      console.log(data);
-      terminal.color('green').write('\n----------------------------------------------------------------\n');
-      terminal.color('grey').write('');
-      resolve(data);
-    });
-  }
+  // function res (data) {
+  //   return new Promise(function (resolve, reject) {
+  //     terminal.color('green').write('\n____[ PROMISE RESOLVED ]________________________________________\n');
+  //     console.log(data);
+  //     terminal.color('green').write('\n----------------------------------------------------------------\n');
+  //     terminal.color('grey').write('');
+  //     resolve(data);
+  //   });
+  // }
 
 
 
@@ -177,6 +178,7 @@ var input_dir       = config.input_dir || process.argv[2]
 
     html += '<!DOCTYPE html>';
     html += '<head>';
+    html += '<meta http-equiv="Content-type" content="text/html; charset=utf-8" />';
     html += '</head>';
     html += '<body>';
     html += '<article>';
@@ -261,10 +263,8 @@ var input_dir       = config.input_dir || process.argv[2]
             if (err!==null) return reject(err);
             var $ = window.$;
 
-            // css.css;
-
             $("head").append( '<style>'+css.css+'</style>');
-            
+
             resolve($('html').html());
         }
       );
