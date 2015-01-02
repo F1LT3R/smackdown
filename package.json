@@ -1,32 +1,35 @@
 {
   "name": "smackdown",
-  "version":"0.2.0",
+  "version": "0.2.0",
   "main": "./bin/smackdown.js",
-  "bin" : { "smackdown" : "./bin/smackdown.js" },
+  "bin": {
+    "smackdown": "./bin/smackdown.js"
+  },
   "description": "converts nested directory of markdown into html",
-  "keywords":"markdown html",
-  "homepage":"http://f1lt3r.com/smackdown",
-  "license" : "MIT",
+  "keywords": "markdown html",
+  "homepage": "http://f1lt3r.com/smackdown",
+  "license": "MIT",
   "author": "Alistair MacDonald <al@pwn.io>",
   "dependencies": {
     "bluebird": "*",
-    "minimatch": "*",
-    "marked": "*",
+    "commander": "^2.6.0",
+    "jsdom": "*",
     "less": "*",
+    "marked": "*",
+    "minimatch": "*",
     "node-terminal": "*",
-    "underscore": "*",
-    "jsdom":"*",
-    "request":"*"
+    "request": "*",
+    "underscore": "*"
   },
   "engine": "node >= 0.4.1",
-  "repository" : {
-    "type" : "git",
-    "url" : "http://github.com/f1lt3r/smackdown.git"
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/f1lt3r/smackdown.git"
   },
   "scripts": {
     "start": "node ./bin/smackdown.js"
   },
   "config": {
-  "less_stylesheet":"https://raw.githubusercontent.com/F1LT3R/markdown-css/master/markdown-default.less"
+    "less_stylesheet": "https://raw.githubusercontent.com/F1LT3R/markdown-css/master/markdown-default.less"
   }
 }

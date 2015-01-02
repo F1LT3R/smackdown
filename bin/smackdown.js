@@ -10,13 +10,26 @@ var Promise   = require('bluebird')
   , jsdom     = require('jsdom')
   , request   = require('request')
   , config    = require('../package').config
+  , flags     = require('commander')
   ;
 
 
+var  GitHubStyle = __dirname+'/less/github.less';
+
+flags
+  .version(config.version)
+  .option('-i, --input [type]', 'Input dir [input]', './')
+  .option('-o, --output [type]', 'Output dir [output]', './')
+  .option('-s, --less [type]', 'Path to Less styles [less]', GitHubStyle)
+  .parse(process.argv);
+  ;
+
+
+
 // GLOBAL VARS
-var input_dir       = config.input_dir || process.argv[2] || "./"
-  , html_output_dir = config.html_output_dir
-  , less_stylesheet = config.less_stylesheet
+var input_dir       = flags.input
+  , html_output_dir = flags.output
+  , less_stylesheet = flags.less
   , extension       = ".md"
   ;
 
@@ -30,26 +43,26 @@ var input_dir       = config.input_dir || process.argv[2] || "./"
 
 
 
-  // Global resolve/reject (for debugging)
-  // function rej (err) {
-  //   return new Promise(function (resolve, reject) {
-  //     terminal.color('red').write('\n____[ PROMISE REJECTED ]________________________________________\n');
-  //     terminal.color('red').write(err);
-  //     terminal.color('red').write('\n----------------------------------------------------------------\n');
-  //     terminal.color('grey').write('');
-  //     return reject(new Error(err));
-  //   })
-  // }
+//  Global resolve/reject (for debugging)
+  function rej (err) {
+    return new Promise(function (resolve, reject) {
+      terminal.color('red').write('\n____[ PROMISE REJECTED ]________________________________________\n');
+      terminal.color('red').write(err);
+      terminal.color('red').write('\n----------------------------------------------------------------\n');
+      terminal.color('grey').write('');
+      return reject(new Error(err));
+    })
+  }
 
-  // function res (data) {
-  //   return new Promise(function (resolve, reject) {
-  //     terminal.color('green').write('\n____[ PROMISE RESOLVED ]________________________________________\n');
-  //     console.log(data);
-  //     terminal.color('green').write('\n----------------------------------------------------------------\n');
-  //     terminal.color('grey').write('');
-  //     resolve(data);
-  //   });
-  // }
+  function res (data) {
+    return new Promise(function (resolve, reject) {
+      terminal.color('green').write('\n____[ PROMISE RESOLVED ]________________________________________\n');
+      console.log(data);
+      terminal.color('green').write('\n----------------------------------------------------------------\n');
+      terminal.color('grey').write('');
+      resolve(data);
+    });
+  }
 
 
 
@@ -230,8 +243,9 @@ var input_dir       = config.input_dir || process.argv[2] || "./"
 
     // var exportList = [];
 
-    // readFile(less_stylesheet)
-    requestStyles(less_stylesheet)
+    readFile(less_stylesheet)
+    // requestStyles(less_stylesheet)
+    // requestStyles(less_stylesheet)
     .then(renderLessToCSS)
     .then(function (css) {
       return new Promise(function (resolve, reject){
