@@ -11,14 +11,17 @@ var Promise   = require('bluebird')
   , request   = require('request')
   , flags     = require('commander')
   , config    = require('../package').config
+  , flags     = require('commander')
   ;
 
 
+var  GitHubStyle = __dirname+'/less/github.less';
+
 flags
   .version(config.version)
-  .option('-i, --input [type]', 'Input dir', './')
-  .option('-o, --output [type]', 'Output dir', './')
-  .option('-s, --style [type]', 'Path to LESS styles', '')
+  .option('-i, --input [type]', 'Input dir [input]', './')
+  .option('-o, --output [type]', 'Output dir [output]', './')
+  .option('-s, --less [type]', 'Path to Less styles [less]', GitHubStyle)
   .parse(process.argv);
   ;
 
@@ -270,14 +273,11 @@ var input_dir       = flags.input  || config.input_dir
           function (err, window) {
             if (err!==null) return reject(err);
             var $ = window.$;
-
-            // css.css;
-
-            $("head").append( '<style>'+css.css+'</style>');
-            
+            $("head").append( '<style>'+css.css+'</style>');            
             resolve($('html').html());
         }
       );
+
 
     });    
   }
@@ -291,8 +291,16 @@ var input_dir       = flags.input  || config.input_dir
         $("a").each(function () {
           var $link = $(this)
             , href  = $link.attr('href')
+            , http  = href.substr(0,4) === 'http'
+            , hash  = href.substr(0,1) === '#'
             ;
-          $link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
+
+          //$link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
+          console.log(href, http);
+
+          if(!http && !hash){
+            $link.attr('href', href+'.html');
+          }
         });
         resolve($('html').html());
       });
