@@ -278,10 +278,12 @@ var input_dir       = flags.input
             var $ = window.$;
 
             $("head").append( '<style>'+css.css+'</style>');
+            $("script").remove();
 
             resolve($('html').html());
         }
       );
+
 
     });    
   }
@@ -295,8 +297,16 @@ var input_dir       = flags.input
         $("a").each(function () {
           var $link = $(this)
             , href  = $link.attr('href')
+            , http  = href.substr(0,4) === 'http'
+            , hash  = href.substr(0,1) === '#'
             ;
-          $link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
+
+          //$link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
+          console.log(href, http);
+
+          if(!http && !hash){
+            $link.attr('href', href+'.html');
+          }
         });
         resolve($('html').html());
       });
