@@ -29,7 +29,7 @@ flags
 // GLOBAL VARS
 var input_dir       = flags.input  || config.input_dir
   , html_output_dir = flags.output || config.html_output_dir
-  , less_stylesheet = flags.style  || config.less_stylesheet
+  , less_stylesheet = flags.less  || config.less_stylesheet
   , extension       = ".md"
   ;
 
@@ -291,16 +291,22 @@ var input_dir       = flags.input  || config.input_dir
         $("a").each(function () {
           var $link = $(this)
             , href  = $link.attr('href')
-            , http  = href.substr(0,4) === 'http'
+            ;
+
+          if(href){
+            var http  = href.substr(0,4) === 'http'
             , hash  = href.substr(0,1) === '#'
             ;
 
-          //$link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
-          console.log(href, http);
+            //$link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
+            console.log(href, http);
 
-          if(!http && !hash){
-            $link.attr('href', href+'.html');
+            if(!http && !hash){
+              $link.attr('href', href+'.html');
+            }
           }
+
+          
         });
         resolve($('html').html());
       });
