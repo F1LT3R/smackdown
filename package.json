@@ -12,6 +12,7 @@
   "author": "Alistair MacDonald <al@pwn.io>",
   "dependencies": {
     "bluebird": "*",
+    "cheerio": "^0.18.0",
     "commander": "^2.6.0",
     "jsdom": "*",
     "less": "*",

@@ -7,7 +7,7 @@ var Promise   = require('bluebird')
   , less      = require('less')
   , terminal  = require('node-terminal')
   , marked    = require('marked')
-  , jsdom     = require('jsdom')
+  , cheerio   = require('cheerio')
   , request   = require('request')
   , flags     = require('commander')
   , config    = require('../package').config
@@ -15,7 +15,7 @@ var Promise   = require('bluebird')
   ;
 
 
-var  GitHubStyle = __dirname+'/less/github.less';
+var  GitHubStyle = __dirname+'/../less/github.less';
 
 flags
   .version(config.version)
@@ -47,7 +47,7 @@ var input_dir       = flags.input  || config.input_dir
     return new Promise(function (resolve, reject) {
       terminal.color('red').write('\n____[ PROMISE REJECTED ]________________________________________\n');
       terminal.color('red').write(err);
-      terminal.color('red').write('\n----------------------------------------------------------------\n');
+      // terminal.color('red').write('\n----------------------------------------------------------------\n');
       terminal.color('grey').write('');
       return reject(new Error(err));
     })
@@ -57,7 +57,7 @@ var input_dir       = flags.input  || config.input_dir
     return new Promise(function (resolve, reject) {
       terminal.color('green').write('\n____[ PROMISE RESOLVED ]________________________________________\n');
       console.log(data);
-      terminal.color('green').write('\n----------------------------------------------------------------\n');
+      // terminal.color('green').write('\n----------------------------------------------------------------\n');
       terminal.color('grey').write('');
       resolve(data);
     });
@@ -212,6 +212,7 @@ var input_dir       = flags.input  || config.input_dir
   
     fs.writeFile(filename, html, function (err, data) {
       if(err!==null) return reject(err);
+      console.log('Saved: ' +filename);
       resolve(data);
     });
 
@@ -268,49 +269,51 @@ var input_dir       = flags.input  || config.input_dir
   function appendCSS (html, css) {
     return new Promise(function (resolve, reject) {
 
-      jsdom.env(html,
-        ["http://code.jquery.com/jquery.js"],
-          function (err, window) {
-            if (err!==null) return reject(err);
-            var $ = window.$;
-            $("head").append( '<style>'+css.css+'</style>');            
-            resolve($('html').html());
-        }
-      );
-
-
+      // jsdom.env(html,
+      //     function (err, window) {
+      //       if (err!==null) return reject(err);
+      //       var head = window.document.getElementsByTagName('head')[0];
+      //       var style=window.document.createElement('style');
+      //       style.innerHTML=css;
+      //       head.appendChild(style.css);
+      //       var html = window.document.getElementsByTagName('html')[0];
+      //       resolve(html.innerHTML);
+      //   }
+      // );     
+      
+      var $ = cheerio.load(html);
+      $('head').append('<style>'+css.css+'</style>');
+      resolve($.html());
     });    
   }
 
   function updateLinks (html) {
     return new Promise(function (resolve, reject) {
 
-      jsdom.env(html, ["http://code.jquery.com/jquery.js"], function (err, window) {
-        if (err!==null) return reject(err);
-        var $ = window.$;
-        $("a").each(function () {
-          var $link = $(this)
-            , href  = $link.attr('href')
-            ;
+      var $ = cheerio.load(html);
+      var links = $('a');
 
-          if(href){
-            var http  = href.substr(0,4) === 'http'
-            , hash  = href.substr(0,1) === '#'
-            ;
+      links.each(function (link) {
+        var href  = $(link).attr('href')
+        
+        // console.log(alinks);
+        // console.log(href);  
 
-            //$link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
-            console.log(href, http);
+        if(href){
+          var http  = href.substr(0,4) === 'http'
+          , hash  = href.substr(0,1) === '#'
+          ;
 
-            if(!http && !hash){
-              $link.attr('href', href+'.html');
-            }
+          //$link.attr('href', href.substr(0, href.lastIndexOf('.'))+'.html');
+          //console.log(href, http);
+
+          if(!http && !hash){
+            $link.attr('href', href+'.html');
           }
-
-          
-        });
-        resolve($('html').html());
+        }          
       });
 
+      resolve($.html());
     });
   }
 
